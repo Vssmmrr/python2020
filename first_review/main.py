@@ -5,14 +5,15 @@ from player import InteractivePlayer, AIPlayer
 
 def main():
     field = game.DraughtsField()
+    field_draw = game.FieldDrawer(field)
     field.place_default()
     players = list()
-    players.append(InteractivePlayer(field, field.WHITE))
-    players.append(AIPlayer(field, field.BLACK, AIPlayer.MEDIUM))
-    # players.append(AIPlayer(field, field.WHITE, AIPlayer.HARD))
+    players.append(InteractivePlayer(field, is_order_white=True, cell_size=field_draw.CELL_SIZE))
+    players.append(AIPlayer(field, is_order_white=False, num_predicted_moves=AIPlayer.MEDIUM))
+    # players.append(AIPlayer(field, is_order_white=True, num_predicted_moves=AIPlayer.HARD))
     pygame.init()
 
-    win = pygame.display.set_mode((8 * field.CELL_SIZE, 8 * field.CELL_SIZE))
+    win = pygame.display.set_mode((8 * field_draw.CELL_SIZE, 8 * field_draw.CELL_SIZE))
     pygame.display.set_caption("Russian Draughts")
 
     run = True
@@ -37,7 +38,7 @@ def main():
             if field.game_over():
                 print("Game over")
 
-        field.draw(win)
+        field_draw.draw(win)
         pygame.display.update()
 
     pygame.quit()

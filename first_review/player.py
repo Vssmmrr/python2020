@@ -1,34 +1,34 @@
-from game import DraughtsField
+from game import DraughtsField, FieldDrawer
 import pygame
-import time
 
 
 class Player:
-    def __init__(self, field: DraughtsField, order):
+    def __init__(self, field: DraughtsField, is_order_white):
         self.field = field
-        self.order = order
+        self.is_order_white = is_order_white
 
     def obtain_events(self, events):
         return False
 
 
 class InteractivePlayer(Player):
-    def __init__(self, field: DraughtsField, order):
-        super().__init__(field, order)
+    def __init__(self, field: DraughtsField, is_order_white, cell_size: int):
+        super().__init__(field, is_order_white)
         self.focused_draught = None
         self.already_eaten = False
+        self.cell_size = cell_size
 
     def obtain_events(self, events):
-        if self.order != self.field.order:
+        if self.is_order_white != self.field.is_order_white:
             return
         for event in events:
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                cell_y = 7 - event.pos[1] // self.field.CELL_SIZE
-                cell_x = event.pos[0] // self.field.CELL_SIZE
+                cell_y = 7 - event.pos[1] // self.cell_size
+                cell_x = event.pos[0] // self.cell_size
                 if self.focused_draught is None:
-                    new_draught = self.field[cell_y][cell_x]
-                    if new_draught is not None and new_draught.color == self.order:
-                        self.focused_draught = self.field[cell_y][cell_x]
+                    new_draught = self.field[cell_y, cell_x]
+                    if new_draught is not None and new_draught.is_white == self.is_order_white:
+                        self.focused_draught = self.field[cell_y, cell_x]
                 else:
                     can_eat = self.field.can_eat()
                     cmd_list = self.focused_draught.move(cell_x - self.focused_draught.x,
@@ -57,13 +57,13 @@ class AIPlayer(Player):
     MEDIUM = 2
     HARD = 3
 
-    def __init__(self, field: DraughtsField, order, num_predicted_moves: int):
-        super().__init__(field, order)
+    def __init__(self, field: DraughtsField, is_order_white, num_predicted_moves: int):
+        super().__init__(field, is_order_white)
         self.num_predicted_moves = num_predicted_moves
         self.moved_draught = None
 
     def get_draughts_difference(self):
-        if self.order == self.field.WHITE:
+        if self.is_order_white:
             return self.field.num_white_draughts - self.field.num_black_draughts
         else:
             return self.field.num_black_draughts - self.field.num_white_draughts
@@ -116,7 +116,7 @@ class AIPlayer(Player):
         return best_diff
 
     def obtain_events(self, events):
-        if self.order != self.field.order:
+        if self.is_order_white != self.field.is_order_white:
             return
 
         # print("Start move")
